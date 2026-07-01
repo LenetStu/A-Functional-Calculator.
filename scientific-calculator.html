@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Scientific Calculator</title>
+<meta name="theme-color" content="#1e1e2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SciCalc">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root {
+    --bg: #1e1e2e;
+    --panel: #181825;
+    --display: #11111b;
+    --btn: #313244;
+    --btn-hover: #45475a;
+    --fn: #585b70;
+    --fn-hover: #6c7086;
+    --op: #f9a825;
+    --op-hover: #ffb300;
+    --eq: #4caf50;
+    --eq-hover: #66bb6a;
+    --clear: #e53935;
+    --clear-hover: #ef5350;
+    --text: #cdd6f4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  .calculator {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    width: 480px;
+    max-width: 100%;
+  }
+  .display {
+    background: var(--display);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    text-align: right;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .history {
+    font-size: 0.9rem;
+    color: #6c7086;
+    min-height: 20px;
+    word-break: break-all;
+  }
+  .current {
+    font-size: 2.2rem;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+  .modes { display: flex; gap: 8px; }
+  .toggle {
+    background: var(--btn);
+    color: var(--text);
+    border: 1px solid var(--fn);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .toggle.active { background: var(--op); color: #1e1e2e; border-color: var(--op); }
+  .toggle:hover { background: var(--btn-hover); }
+  .toggle.active:hover { background: var(--op-hover); }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 9px;
+  }
+  button.key {
+    border: none;
+    border-radius: 10px;
+    padding: 16px 0;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--btn);
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
+  }
+  button.key:hover { background: var(--btn-hover); }
+  button.key:active { transform: scale(0.94); }
+  .fn { background: var(--fn); font-size: 0.95rem; }
+  .fn:hover { background: var(--fn-hover); }
+  .op { background: var(--op); color: #1e1e2e; }
+  .op:hover { background: var(--op-hover); }
+  .equals { background: var(--eq); color: #fff; }
+  .equals:hover { background: var(--eq-hover); }
+  .clear { background: var(--clear); color: #fff; }
+  .clear:hover { background: var(--clear-hover); }
+</style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="topbar">
+      <div class="modes">
+        <button class="toggle active" id="degToggle">DEG</button>
+        <button class="toggle" id="invToggle">INV</button>
+      </div>
+      <div style="color:#6c7086;font-size:0.8rem">Scientific</div>
+    </div>
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div class="current" id="current">0</div>
+    </div>
+    <div class="buttons" id="buttons">
+      <!-- Row 1 -->
+      <button class="key fn" data-fn="sin">sin</button>
+      <button class="key fn" data-fn="cos">cos</button>
+      <button class="key fn" data-fn="tan">tan</button>
+      <button class="key fn" data-const="pi">π</button>
+      <button class="key fn" data-const="e">e</button>
+      <!-- Row 2 -->
+      <button class="key fn" data-fn="ln">ln</button>
+      <button class="key fn" data-fn="log">log</button>
+      <button class="key fn" data-fn="sqrt">√</button>
+      <button class="key fn" data-fn="square">x²</button>
+      <button class="key op" data-op="^">xʸ</button>
+      <!-- Row 3 -->
+      <button class="key fn" data-fn="fact">n!</button>
+      <button class="key fn" data-fn="inv">1/x</button>
+      <button class="key fn" data-fn="abs">|x|</button>
+      <button class="key fn" data-action="paren">( )</button>
+      <button class="key op" data-op="%">mod</button>
+      <!-- Row 4 -->
+      <button class="key clear" data-action="clear">AC</button>
+      <button class="key fn" data-action="delete">⌫</button>
+      <button class="key fn" data-action="negate">±</button>
+      <button class="key fn" data-fn="percent">%</button>
+      <button class="key op" data-op="/">÷</button>
+      <!-- Row 5 -->
+      <button class="key" data-num="7">7</button>
+      <button class="key" data-num="8">8</button>
+      <button class="key" data-num="9">9</button>
+      <button class="key op" data-op="*">×</button>
+      <button class="key fn" data-const="ans">Ans</button>
+      <!-- Row 6 -->
+      <button class="key" data-num="4">4</button>
+      <button class="key" data-num="5">5</button>
+      <button class="key" data-num="6">6</button>
+      <button class="key op" data-op="-">−</button>
+      <button class="key op" data-op="+">+</button>
+      <!-- Row 7 -->
+      <button class="key" data-num="1">1</button>
+      <button class="key" data-num="2">2</button>
+      <button class="key" data-num="3">3</button>
+      <button class="key" data-num="0">0</button>
+      <button class="key equals" data-action="equals">=</button>
+      <!-- Row 8 -->
+      <button class="key" data-num=".">.</button>
+      <button class="key fn" data-fn="exp">eˣ</button>
+      <button class="key fn" data-fn="tenpow">10ˣ</button>
+      <button class="key fn" data-fn="cbrt">∛</button>
+      <button class="key fn" data-action="clearentry">CE</button>
+    </div>
+  </div>
+
+<script>
+  const currentEl = document.getElementById('current');
+  const historyEl = document.getElementById('history');
+  const degToggle = document.getElementById('degToggle');
+  const invToggle = document.getElementById('invToggle');
+
+  let expr = '';        // raw JS-evaluable expression being built
+  let display = '0';     // what the user sees being typed
+  let lastAns = 0;
+  let degMode = true;
+  let invMode = false;
+  let justEvaluated = false;
+
+  function refresh() {
+    currentEl.textContent = display || '0';
+    historyEl.textContent = expr;
+  }
+
+  // ---- math helpers exposed to the evaluator ----
+  const toRad = x => degMode ? x * Math.PI / 180 : x;
+  const fromTrigInv = x => degMode ? x * 180 / Math.PI : x;
+  function factorial(n) {
+    if (n < 0 || !Number.isInteger(n)) return NaN;
+    let r = 1;
+    for (let i = 2; i <= n; i++) r *= i;
+    return r;
+  }
+  const M = {
+    sin: x => Math.sin(toRad(x)),
+    cos: x => Math.cos(toRad(x)),
+    tan: x => Math.tan(toRad(x)),
+    asin: x => fromTrigInv(Math.asin(x)),
+    acos: x => fromTrigInv(Math.acos(x)),
+    atan: x => fromTrigInv(Math.atan(x)),
+    ln: Math.log,
+    log: Math.log10,
+    sqrt: Math.sqrt,
+    cbrt: Math.cbrt,
+    abs: Math.abs,
+    exp: Math.exp,
+    fact: factorial
+  };
+
+  // Append a token both to the visible display and the eval expression
+  function append(displayTok, exprTok) {
+    if (justEvaluated && /[0-9.]/.test(displayTok)) {
+      // start fresh after a result if a number is pressed
+      display = ''; expr = '';
+    }
+    justEvaluated = false;
+    if (display === '0' && /[0-9]/.test(displayTok)) { display = ''; }
+    display += displayTok;
+    expr += exprTok;
+    refresh();
+  }
+
+  function inputNumber(n) {
+    append(n, n);
+  }
+
+  function inputOperator(op) {
+    justEvaluated = false;
+    const map = { '*': '×', '/': '÷', '-': '−', '+': '+', '^': '^', '%': ' mod ' };
+    const exprMap = { '*': '*', '/': '/', '-': '-', '+': '+', '^': '**', '%': '%' };
+    if (display === '0' && op === '-') { display = '-'; expr = '-'; refresh(); return; }
+    display += map[op];
+    expr += exprMap[op];
+    refresh();
+  }
+
+  let openParens = 0;
+  function toggleParen() {
+    justEvaluated = false;
+    // decide open vs close based on context
+    const lastChar = expr.slice(-1);
+    const wantClose = openParens > 0 && /[0-9.)]/.test(lastChar);
+    if (wantClose) { expr += ')'; display += ')'; openParens--; }
+    else { expr += '('; display += '('; openParens++; }
+    refresh();
+  }
+
+  function applyFunction(fn) {
+    justEvaluated = false;
+    if (fn === 'square') { expr += '**2'; display += '²'; refresh(); return; }
+    if (fn === 'inv') { expr = `1/(${expr})`; display = `1/(${display})`; refresh(); return; }
+    if (fn === 'percent') { expr += '/100'; display += '%'; refresh(); return; }
+    if (fn === 'tenpow') { wrapPrefix('10**(', '10^('); openParens++; return; }
+    if (fn === 'exp') { wrapPrefix('Math.exp(', 'exp('); openParens++; return; }
+    const labels = {
+      sin: invMode ? 'asin' : 'sin', cos: invMode ? 'acos' : 'cos', tan: invMode ? 'atan' : 'tan',
+      ln: 'ln', log: 'log', sqrt: '√', cbrt: '∛', abs: 'abs', fact: 'fact'
+    };
+    const real = (fn === 'sin' && invMode) ? 'asin'
+               : (fn === 'cos' && invMode) ? 'acos'
+               : (fn === 'tan' && invMode) ? 'atan' : fn;
+    if (fn === 'fact') { expr += `M.fact(`; display += 'fact('; openParens++; refresh(); return; }
+    expr += `M.${real}(`;
+    display += `${labels[fn]}(`;
+    openParens++;
+    refresh();
+  }
+
+  function wrapPrefix(exprPrefix, displayPrefix) {
+    expr += exprPrefix;
+    display += displayPrefix;
+    refresh();
+  }
+
+  function inputConst(c) {
+    if (justEvaluated) { display = ''; expr = ''; justEvaluated = false; }
+    if (display === '0') { display = ''; }
+    if (c === 'pi') { expr += 'Math.PI'; display += 'π'; }
+    else if (c === 'e') { expr += 'Math.E'; display += 'e'; }
+    else if (c === 'ans') { expr += `(${lastAns})`; display += 'Ans'; }
+    refresh();
+  }
+
+  function negate() {
+    if (display === '0' || display === '') return;
+    expr = `-(${expr})`;
+    display = `-(${display})`;
+    refresh();
+  }
+
+  function evaluate() {
+    if (!expr) return;
+    // auto-close any open parens
+    let e = expr + ')'.repeat(openParens);
+    try {
+      const result = Function('M', '"use strict"; return (' + e + ')')(M);
+      if (result === undefined || Number.isNaN(result) || !Number.isFinite(result)) {
+        display = 'Error';
+      } else {
+        const rounded = Math.round((result + Number.EPSILON) * 1e10) / 1e10;
+        lastAns = rounded;
+        historyEl.textContent = display + ' =';
+        display = String(rounded);
+        expr = String(rounded);
+      }
+    } catch (err) {
+      display = 'Error';
+      expr = '';
+    }
+    openParens = 0;
+    justEvaluated = true;
+    currentEl.textContent = display;
+  }
+
+  function clearAll() {
+    expr = ''; display = '0'; openParens = 0; justEvaluated = false; refresh();
+  }
+  function clearEntry() {
+    // remove trailing number token
+    display = display.replace(/[0-9.]+$/, '') || '0';
+    expr = expr.replace(/[0-9.]+$/, '');
+    refresh();
+  }
+  function del() {
+    if (justEvaluated) { clearAll(); return; }
+    display = display.length > 1 ? display.slice(0, -1) : '0';
+    expr = expr.slice(0, -1);
+    refresh();
+  }
+
+  document.getElementById('buttons').addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    const d = t.dataset;
+    if (d.num !== undefined) inputNumber(d.num);
+    else if (d.op !== undefined) inputOperator(d.op);
+    else if (d.fn !== undefined) applyFunction(d.fn);
+    else if (d.const !== undefined) inputConst(d.const);
+    else if (d.action === 'equals') evaluate();
+    else if (d.action === 'clear') clearAll();
+    else if (d.action === 'clearentry') clearEntry();
+    else if (d.action === 'delete') del();
+    else if (d.action === 'negate') negate();
+    else if (d.action === 'paren') toggleParen();
+  });
+
+  degToggle.addEventListener('click', () => {
+    degMode = !degMode;
+    degToggle.textContent = degMode ? 'DEG' : 'RAD';
+  });
+  invToggle.addEventListener('click', () => {
+    invMode = !invMode;
+    invToggle.classList.toggle('active', invMode);
+    // relabel trig buttons
+    document.querySelector('[data-fn="sin"]').textContent = invMode ? 'sin⁻¹' : 'sin';
+    document.querySelector('[data-fn="cos"]').textContent = invMode ? 'cos⁻¹' : 'cos';
+    document.querySelector('[data-fn="tan"]').textContent = invMode ? 'tan⁻¹' : 'tan';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key >= '0' && e.key <= '9') inputNumber(e.key);
+    else if (e.key === '.') inputNumber('.');
+    else if (['+', '-', '*', '/'].includes(e.key)) inputOperator(e.key);
+    else if (e.key === '^') inputOperator('^');
+    else if (e.key === '(' || e.key === ')') toggleParen();
+    else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); evaluate(); }
+    else if (e.key === 'Backspace') del();
+    else if (e.key === 'Escape') clearAll();
+  });
+
+  refresh();
+
+  // ---- PWA: register service worker for offline / installability ----
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
